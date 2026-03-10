@@ -1,47 +1,33 @@
 import java.util.*;
 
-class TokenBucket{
-    int tokens;
-    long lastTime;
-
-    TokenBucket(int limit){
-        tokens = limit;
-        lastTime = System.currentTimeMillis();
-    }
-}
-
 public class week1and2 {
 
-    static HashMap<String,TokenBucket> clients = new HashMap<>();
-    static int LIMIT = 5;
+    static HashMap<String,Integer> queries = new HashMap<>();
 
-    static boolean check(String id){
-
-        clients.putIfAbsent(id,new TokenBucket(LIMIT));
-        TokenBucket b = clients.get(id);
-
-        if(System.currentTimeMillis()-b.lastTime > 3600000){
-            b.tokens = LIMIT;
-            b.lastTime = System.currentTimeMillis();
-        }
-
-        if(b.tokens>0){
-            b.tokens--;
-            return true;
-        }
-
-        return false;
+    static void addQuery(String q){
+        queries.put(q, queries.getOrDefault(q,0)+1);
     }
 
-    public static void main(String[] args){
+    static void search(String prefix){
 
-        String client="abc123";
+        System.out.println("Suggestions:");
 
-        for(int i=1;i<=7;i++){
-            if(check(client))
-                System.out.println("Allowed");
-            else
-                System.out.println("Rate limit exceeded");
-        }
+        queries.entrySet()
+                .stream()
+                .filter(e -> e.getKey().startsWith(prefix))
+                .sorted((a,b)->b.getValue()-a.getValue())
+                .limit(5)
+                .forEach(e -> System.out.println(e.getKey()+" ("+e.getValue()+")"));
+    }
+
+    public static void main(String[] args) {
+
+        addQuery("java tutorial");
+        addQuery("javascript guide");
+        addQuery("java tutorial");
+        addQuery("java download");
+        addQuery("java tutorial");
+
+        search("jav");
     }
 }
