@@ -2,60 +2,41 @@ import java.util.*;
 
 public class week1and2 {
 
-    static HashMap<String, Set<String>> ngramIndex = new HashMap<>();
+    static HashMap<String,Integer> pageViews = new HashMap<>();
+    static HashMap<String,Set<String>> visitors = new HashMap<>();
+    static HashMap<String,Integer> sources = new HashMap<>();
 
-    public static List<String> generateNGrams(String text, int n) {
-        String[] words = text.split("\\s+");
-        List<String> ngrams = new ArrayList<>();
+    static void process(String url,String user,String source){
 
-        for (int i = 0; i <= words.length - n; i++) {
-            StringBuilder gram = new StringBuilder();
-            for (int j = 0; j < n; j++) {
-                gram.append(words[i + j]).append(" ");
-            }
-            ngrams.add(gram.toString().trim());
-        }
+        pageViews.put(url,pageViews.getOrDefault(url,0)+1);
 
-        return ngrams;
+        visitors.putIfAbsent(url,new HashSet<>());
+        visitors.get(url).add(user);
+
+        sources.put(source,sources.getOrDefault(source,0)+1);
     }
 
-    public static void addDocument(String docId, String text) {
-        List<String> grams = generateNGrams(text, 3);
+    static void dashboard(){
 
-        for (String gram : grams) {
-            ngramIndex.putIfAbsent(gram, new HashSet<>());
-            ngramIndex.get(gram).add(docId);
-        }
-    }
-
-    public static void checkPlagiarism(String docId, String text) {
-
-        List<String> grams = generateNGrams(text, 3);
-        HashMap<String, Integer> matchCount = new HashMap<>();
-
-        for (String gram : grams) {
-            if (ngramIndex.containsKey(gram)) {
-                for (String doc : ngramIndex.get(gram)) {
-                    matchCount.put(doc, matchCount.getOrDefault(doc, 0) + 1);
-                }
-            }
+        System.out.println("Pages:");
+        for(String url:pageViews.keySet()){
+            System.out.println(url+" views:"+pageViews.get(url)+
+                    " unique:"+visitors.get(url).size());
         }
 
-        System.out.println("Matches Found:");
-
-        for (String doc : matchCount.keySet()) {
-            double similarity = (matchCount.get(doc) * 100.0) / grams.size();
-            System.out.println(doc + " → Similarity: " + similarity + "%");
+        System.out.println("\nSources:");
+        for(String s:sources.keySet()){
+            System.out.println(s+" : "+sources.get(s));
         }
     }
 
     public static void main(String[] args) {
 
-        String doc1 = "data structures and algorithms are important";
-        String doc2 = "algorithms and data structures help solve problems";
+        process("/news","u1","google");
+        process("/news","u2","facebook");
+        process("/sports","u3","direct");
+        process("/news","u1","google");
 
-        addDocument("doc1", doc1);
-
-        checkPlagiarism("doc2", doc2);
+        dashboard();
     }
 }
