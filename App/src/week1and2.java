@@ -1,36 +1,42 @@
 import java.util.*;
 
-public class week1and2 {
+class Entry {
+    String ip;
+    long expiry;
 
-    static LinkedHashMap<String,String> L1 = new LinkedHashMap<>(5,0.75f,true){
-        protected boolean removeEldestEntry(Map.Entry<String,String> e){
-            return size()>5;
-        }
-    };
-
-    static HashMap<String,String> L2 = new HashMap<>();
-
-    static String getVideo(String id){
-
-        if(L1.containsKey(id)){
-            return "L1 HIT: "+L1.get(id);
-        }
-
-        if(L2.containsKey(id)){
-            String v=L2.get(id);
-            L1.put(id,v);
-            return "L2 HIT → moved to L1";
-        }
-
-        String data="VideoData_"+id;
-        L2.put(id,data);
-        return "DB HIT → added to L2";
+    Entry(String ip,int ttl){
+        this.ip=ip;
+        expiry=System.currentTimeMillis()+ttl*1000;
     }
 
-    public static void main(String[] args){
+    boolean expired(){
+        return System.currentTimeMillis()>expiry;
+    }
+}
 
-        System.out.println(getVideo("video1"));
-        System.out.println(getVideo("video1"));
-        System.out.println(getVideo("video2"));
+public class week1and2{
+
+    static HashMap<String,Entry> cache=new HashMap<>();
+
+    static String resolve(String domain){
+
+        if(cache.containsKey(domain) && !cache.get(domain).expired()){
+            return "Cache HIT: "+cache.get(domain).ip;
+        }
+
+        String ip="192.168.1."+new Random().nextInt(100);
+        cache.put(domain,new Entry(ip,5));
+
+        return "Cache MISS: "+ip;
+    }
+
+    public static void main(String[] args)throws Exception{
+
+        System.out.println(resolve("google.com"));
+        System.out.println(resolve("google.com"));
+
+        Thread.sleep(6000);
+
+        System.out.println(resolve("google.com"));
     }
 }
