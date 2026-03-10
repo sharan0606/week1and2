@@ -2,29 +2,35 @@ import java.util.*;
 
 public class week1and2 {
 
-    static void findTwoSum(int[] arr, int target){
+    static LinkedHashMap<String,String> L1 = new LinkedHashMap<>(5,0.75f,true){
+        protected boolean removeEldestEntry(Map.Entry<String,String> e){
+            return size()>5;
+        }
+    };
 
-        HashMap<Integer,Integer> map = new HashMap<>();
+    static HashMap<String,String> L2 = new HashMap<>();
 
-        for(int i=0;i<arr.length;i++){
+    static String getVideo(String id){
 
-            int complement = target - arr[i];
-
-            if(map.containsKey(complement)){
-                System.out.println("Pair: "+complement+" + "+arr[i]+" = "+target);
-                return;
-            }
-
-            map.put(arr[i],i);
+        if(L1.containsKey(id)){
+            return "L1 HIT: "+L1.get(id);
         }
 
-        System.out.println("No pair found");
+        if(L2.containsKey(id)){
+            String v=L2.get(id);
+            L1.put(id,v);
+            return "L2 HIT → moved to L1";
+        }
+
+        String data="VideoData_"+id;
+        L2.put(id,data);
+        return "DB HIT → added to L2";
     }
 
     public static void main(String[] args){
 
-        int[] transactions = {500,300,200,700};
-
-        findTwoSum(transactions,500);
+        System.out.println(getVideo("video1"));
+        System.out.println(getVideo("video1"));
+        System.out.println(getVideo("video2"));
     }
 }
