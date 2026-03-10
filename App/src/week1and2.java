@@ -1,42 +1,47 @@
 import java.util.*;
 
+class TokenBucket{
+    int tokens;
+    long lastTime;
+
+    TokenBucket(int limit){
+        tokens = limit;
+        lastTime = System.currentTimeMillis();
+    }
+}
+
 public class week1and2 {
 
-    static HashMap<String,Integer> pageViews = new HashMap<>();
-    static HashMap<String,Set<String>> visitors = new HashMap<>();
-    static HashMap<String,Integer> sources = new HashMap<>();
+    static HashMap<String,TokenBucket> clients = new HashMap<>();
+    static int LIMIT = 5;
 
-    static void process(String url,String user,String source){
+    static boolean check(String id){
 
-        pageViews.put(url,pageViews.getOrDefault(url,0)+1);
+        clients.putIfAbsent(id,new TokenBucket(LIMIT));
+        TokenBucket b = clients.get(id);
 
-        visitors.putIfAbsent(url,new HashSet<>());
-        visitors.get(url).add(user);
-
-        sources.put(source,sources.getOrDefault(source,0)+1);
-    }
-
-    static void dashboard(){
-
-        System.out.println("Pages:");
-        for(String url:pageViews.keySet()){
-            System.out.println(url+" views:"+pageViews.get(url)+
-                    " unique:"+visitors.get(url).size());
+        if(System.currentTimeMillis()-b.lastTime > 3600000){
+            b.tokens = LIMIT;
+            b.lastTime = System.currentTimeMillis();
         }
 
-        System.out.println("\nSources:");
-        for(String s:sources.keySet()){
-            System.out.println(s+" : "+sources.get(s));
+        if(b.tokens>0){
+            b.tokens--;
+            return true;
         }
+
+        return false;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args){
 
-        process("/news","u1","google");
-        process("/news","u2","facebook");
-        process("/sports","u3","direct");
-        process("/news","u1","google");
+        String client="abc123";
 
-        dashboard();
+        for(int i=1;i<=7;i++){
+            if(check(client))
+                System.out.println("Allowed");
+            else
+                System.out.println("Rate limit exceeded");
+        }
     }
 }
