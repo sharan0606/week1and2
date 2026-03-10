@@ -2,32 +2,40 @@ import java.util.*;
 
 public class week1and2 {
 
-    static HashMap<String,Integer> queries = new HashMap<>();
+    static String[] parking = new String[10];
 
-    static void addQuery(String q){
-        queries.put(q, queries.getOrDefault(q,0)+1);
+    static int hash(String plate){
+        return Math.abs(plate.hashCode()) % parking.length;
     }
 
-    static void search(String prefix){
+    static void park(String plate){
 
-        System.out.println("Suggestions:");
+        int index = hash(plate);
 
-        queries.entrySet()
-                .stream()
-                .filter(e -> e.getKey().startsWith(prefix))
-                .sorted((a,b)->b.getValue()-a.getValue())
-                .limit(5)
-                .forEach(e -> System.out.println(e.getKey()+" ("+e.getValue()+")"));
+        while(parking[index] != null){
+            index = (index + 1) % parking.length;
+        }
+
+        parking[index] = plate;
+        System.out.println(plate + " parked at spot " + index);
     }
 
-    public static void main(String[] args) {
+    static void exit(String plate){
 
-        addQuery("java tutorial");
-        addQuery("javascript guide");
-        addQuery("java tutorial");
-        addQuery("java download");
-        addQuery("java tutorial");
+        for(int i=0;i<parking.length;i++){
+            if(plate.equals(parking[i])){
+                parking[i] = null;
+                System.out.println(plate + " exited from spot " + i);
+            }
+        }
+    }
 
-        search("jav");
+    public static void main(String[] args){
+
+        park("ABC123");
+        park("XYZ999");
+        park("CAR456");
+
+        exit("XYZ999");
     }
 }
