@@ -2,40 +2,29 @@ import java.util.*;
 
 public class week1and2 {
 
-    static String[] parking = new String[10];
+    static void findTwoSum(int[] arr, int target){
 
-    static int hash(String plate){
-        return Math.abs(plate.hashCode()) % parking.length;
-    }
+        HashMap<Integer,Integer> map = new HashMap<>();
 
-    static void park(String plate){
+        for(int i=0;i<arr.length;i++){
 
-        int index = hash(plate);
+            int complement = target - arr[i];
 
-        while(parking[index] != null){
-            index = (index + 1) % parking.length;
-        }
-
-        parking[index] = plate;
-        System.out.println(plate + " parked at spot " + index);
-    }
-
-    static void exit(String plate){
-
-        for(int i=0;i<parking.length;i++){
-            if(plate.equals(parking[i])){
-                parking[i] = null;
-                System.out.println(plate + " exited from spot " + i);
+            if(map.containsKey(complement)){
+                System.out.println("Pair: "+complement+" + "+arr[i]+" = "+target);
+                return;
             }
+
+            map.put(arr[i],i);
         }
+
+        System.out.println("No pair found");
     }
 
     public static void main(String[] args){
 
-        park("ABC123");
-        park("XYZ999");
-        park("CAR456");
+        int[] transactions = {500,300,200,700};
 
-        exit("XYZ999");
+        findTwoSum(transactions,500);
     }
 }
