@@ -1,34 +1,69 @@
 import java.util.*;
 
+class DNSEntry {
+    String ip;
+    long expiryTime;
+
+    DNSEntry(String ip, long ttlSeconds) {
+        this.ip = ip;
+        this.expiryTime = System.currentTimeMillis() + (ttlSeconds * 1000);
+    }
+
+    boolean isExpired() {
+        return System.currentTimeMillis() > expiryTime;
+    }
+}
+
 public class week1and2 {
 
-    static HashMap<String, Integer> users = new HashMap<>();
-    static HashMap<String, Integer> attempts = new HashMap<>();
+    static HashMap<String, DNSEntry> cache = new HashMap<>();
+    static int hits = 0;
+    static int misses = 0;
 
-    public static boolean checkAvailability(String username) {
-        attempts.put(username, attempts.getOrDefault(username, 0) + 1);
-        return !users.containsKey(username);
-    }
+    public static String resolve(String domain) {
 
-    public static List<String> suggestAlternatives(String username) {
-        List<String> suggestions = new ArrayList<>();
+        if (cache.containsKey(domain)) {
+            DNSEntry entry = cache.get(domain);
 
-        for(int i=1;i<=3;i++){
-            suggestions.add(username + i);
+            if (!entry.isExpired()) {
+                hits++;
+                return "Cache HIT → " + entry.ip;
+            } else {
+                cache.remove(domain);
+            }
         }
 
-        suggestions.add(username.replace("_","."));
-        return suggestions;
+        misses++;
+
+        String ip = queryUpstreamDNS(domain);
+
+        cache.put(domain, new DNSEntry(ip, 10)); // TTL 10 seconds
+
+        return "Cache MISS → " + ip;
     }
 
-    public static void main(String[] args) {
+    public static String queryUpstreamDNS(String domain) {
+        return "192.168.1." + new Random().nextInt(255);
+    }
 
-        users.put("john_doe",101);
-        users.put("admin",102);
+    public static void getStats() {
+        int total = hits + misses;
+        double hitRate = total == 0 ? 0 : (hits * 100.0) / total;
 
-        System.out.println("john_doe available: " + checkAvailability("john_doe"));
-        System.out.println("jane_smith available: " + checkAvailability("jane_smith"));
+        System.out.println("Cache Hits: " + hits);
+        System.out.println("Cache Misses: " + misses);
+        System.out.println("Hit Rate: " + hitRate + "%");
+    }
 
-        System.out.println("Suggestions for john_doe: " + suggestAlternatives("john_doe"));
+    public static void main(String[] args) throws InterruptedException {
+
+        System.out.println(resolve("google.com"));
+        System.out.println(resolve("google.com"));
+
+        Thread.sleep(11000); // wait for TTL to expire
+
+        System.out.println(resolve("google.com"));
+
+        getStats();
     }
 }
